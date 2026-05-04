@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamVault - Search & Watch Movies Free</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface-elevated: #1a1a1a;
+      --border: #2a2a2a;
+      --accent: #e50914;
+      --accent2: #f40612;
+      --text: #ffffff;
+      --text-secondary: #b3b3b3;
+      --muted: #6c6c6c;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 100%);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+    }
+
+    .nav-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--accent), #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+
+    .search-container {
+      flex: 1;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .search-input-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 12px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--surface-elevated);
+    }
+
+    .search-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .search-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, rgba(229,9,20,0.1) 0%, rgba(0,0,0,0) 100%);
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 2px;
+    }
+
+    .hero p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Results Section */
+    .results-section {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .results-count {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* Loading Spinner */
+    .loading {
+      text-align: center;
+      padding: 60px;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Movie Grid */
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 24px;
+    }
+
+    .movie-card {
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid var(--border);
+    }
+
+    .movie-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-color: var(--accent);
+    }
+
+    .movie-poster {
+      position: relative;
+      aspect-ratio: 2/3;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+    }
+
+    .movie-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+
+    .movie-card:hover .movie-poster img {
+      transform: scale(1.05);
+    }
+
+    .movie-rating {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #ffc107;
+    }
+
+    .movie-info {
+      padding: 12px;
+    }
+
+    .movie-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .movie-year {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .watch-btn {
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .watch-btn:hover {
+      background: var(--accent2);
+    }
+
+    /* No Results */
+    .no-results {
+      text-align: center;
+      padding: 60px;
+      color: var(--text-secondary);
+    }
+
+    .no-results svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Trending Section */
+    .trending-section {
+      margin-top: 48px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-content {
+        flex-direction: column;
+      }
+      
+      .search-container {
+        max-width: 100%;
+        width: 100%;
+      }
+      
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .hero p {
+        font-size: 0.9rem;
+      }
+      
+      .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 16px;
+      }
+      
+      .movie-title {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-content">
+      <a href="#" class="logo">StreamVault</a>
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search for any movie... (e.g., Inception, Avatar, The Dark Knight)" autocomplete="off">
+          <button class="search-btn" onclick="searchMovies()">Search</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>🎬 Unlimited Movies</h1>
+    <p>Search any movie, click to watch instantly. Free HD streaming with multiple servers.</p>
+  </div>
+
+  <div class="results-section">
+    <div class="section-header">
+      <h2 class="section-title" id="sectionTitle">Trending Movies</h2>
+      <div class="results-count" id="resultsCount"></div>
+    </div>
+    
+    <div id="contentArea">
+      <!-- Loading state -->
+      <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p>Loading movies...</p>
+      </div>
+      
+      <!-- Movies grid -->
+      <div id="moviesGrid" class="movies-grid" style="display: none;"></div>
+      
+      <!-- No results -->
+      <div id="noResults" class="no-results" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9.5 3h-4A2.5 2.5 0 003 5.5v4A2.5 2.5 0 005.5 12h4A2.5 2.5 0 0012 9.5v-4A2.5 2.5 0 009.5 3z" stroke="currentColor"/>
+          <path d="M9.5 13h-4A2.5 2.5 0 003 15.5v4A2.5 2.5 0 005.5 22h4A2.5 2.5 0 0012 19.5v-4A2.5 2.5 0 009.5 13z" stroke="currentColor"/>
+          <path d="M18.5 3h-4A2.5 2.5 0 0012 5.5v4A2.5 2.5 0 0014.5 12h4A2.5 2.5 0 0021 9.5v-4A2.5 2.5 0 0018.5 3z" stroke="currentColor"/>
+        </svg>
+        <h3>No movies found</h3>
+        <p>Try searching with a different title</p>
+      </div>
+    </div>
+
+    <!-- Trending Section (hidden when searching) -->
+    <div id="trendingSection" class="trending-section">
+      <div class="section-header">
+        <h2 class="section-title">🔥 Popular Now</h2>
+      </div>
+      <div id="trendingGrid" class="movies-grid"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>StreamVault - Free Movie Streaming | All content is hosted by third-party services</p>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = 'https://api.imdbapi.dev/search/titles';
+    
+    // Popular movies (fallback & trending)
+    const POPULAR_MOVIES = [
+      'Inception', 'The Dark Knight', 'Interstellar', 'Avatar', 
+      'The Shawshank Redemption', 'Pulp Fiction', 'Forrest Gump', 
+      'The Matrix', 'Fight Club', 'Goodfellas', 'Gladiator',
+      'Titanic', 'Jurassic Park', 'Star Wars', 'The Godfather'
+    ];
+    
+    let currentSearchQuery = '';
+    
+    // ─────────────────────────────────────────────
+    // SEARCH MOVIES
+    // ─────────────────────────────────────────────
+    async function searchMovies() {
+      const query = document.getElementById('searchInput').value.trim();
+      
+      if (!query) {
+        showTrending();
+        return;
+      }
+      
+      currentSearchQuery = query;
+      
+      // Show loading
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('moviesGrid').style.display = 'none';
+      document.getElementById('noResults').style.display = 'none';
+      document.getElementById('trendingSection').style.display = 'none';
+      document.getElementById('sectionTitle').textContent = `Search Results for "${query}"`;
+      document.getElementById('resultsCount').textContent = 'Loading...';
+      
+      try {
+        const encodedQuery = encodeURIComponent(query);
+        const response = await fetch(`${API_BASE}?query=${encodedQuery}&limit=20`);
+        
+        if (!response.ok) throw new Error('API request failed');
+        
+        const data = await response.json();
+        
+        if (data.titles && data.titles.length > 0) {
+          displayMovies(data.titles, 'moviesGrid');
+          document.getElementById('resultsCount').textContent = `${data.titles.length} movies found`;
+          document.getElementById('loadingState').style.display = 'none';
+          document.getElementById('moviesGrid').style.display = 'grid';
+        } else {
+          showNoResults();
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        showNoResults();
+      }
+    }
+    
+    // ─────────────────────────────────────────────
+    // DISPLAY MOVIES
+    // ─────────────────────────────────────────────
+    function displayMovies(movies, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      
+      movies.forEach(movie => {
+        // Filter only movies (not series)
+        if (movie.type === 'movie') {
+          const card = createMovieCard(movie);
+          container.appendChild(card);
+        }
+      });
+      
+      // If no movies after filtering
+      if (container.children.length === 0 && containerId === 'moviesGrid') {
+        showNoResults();
+      }
+    }
+    
+    function createMovieCard(movie) {
+      const card = document.createElement('div');
+      card.className = 'movie-card';
+      
+      const title = movie.primaryTitle || movie.originalTitle;
+      const year = movie.startYear || 'N/A';
+      const rating = movie.rating?.aggregateRating ? movie.rating.aggregateRating.toFixed(1) : null;
+      const posterUrl = movie.primaryImage?.url || getFallbackPoster(title);
+      const imdbId = movie.id;
+      
+      card.innerHTML = `
+        <div class="movie-poster">
+          <img src="${posterUrl}" alt="${title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/1a1a1a/666?text=${encodeURIComponent(title)}'">
+          ${rating ? `<div class="movie-rating">⭐ ${rating}</div>` : ''}
+        </div>
+        <div class="movie-info">
+          <div class="movie-title">${escapeHtml(title)}</div>
+          <div class="movie-year">${year}</div>
+          <button class="watch-btn" onclick="watchMovie('${imdbId}', '${escapeHtml(title)}')">
+            🎬 Watch Now
+          </button>
+        </div>
+      `;
+      
+      return card;
+    }
+    
+    function getFallbackPoster(title) {
+      // Use UI avatars as fallback
+      return `https://ui-avatars.com/api/?background=e50914&color=fff&bold=true&size=300&length=2&name=${encodeURIComponent(title)}`;
+    }
+    
+    // ─────────────────────────────────────────────
+    // WATCH MOVIE - Redirect to Player
+    // ─────────────────────────────────────────────
+    function watchMovie(imdbId, title) {
+      // Store recently watched in localStorage
+      const recent = JSON.parse(localStorage.getItem('recentMovies') || '[]');
+      const newRecent = [{ id: imdbId, title: title, timestamp: Date.now() }, ...recent.filter(m => m.id !== imdbId)].slice(0, 10);
+      localStorage.setItem('recentMovies', JSON.stringify(newRecent));
+      
+      // Redirect to player with movie ID
+      window.location.href = `player.html?id=${imdbId}`;
+    }
+    
+    // ─────────────────────────────────────────────
+    // SHOW TRENDING MOVIES
+    // ─────────────────────────────────────────────
+    async function showTrending() {
+      currentSearchQuery = '';
+      document.getElementById('sectionTitle').textContent = 'Trending Movies';
+      document.getElementById('resultsCount').textContent = '';
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('moviesGrid').style.display = 'none';
+      document.getElementById('noResults').style.display = 'none';
+      document.getElementById('trendingSection').style.display = 'block';
+      
+      // Load trending/popular movies
+      try {
+        // Search for each popular movie and collect results
+        const promises = POPULAR_MOVIES.slice(0, 12).map(async (movieTitle) => {
+          const response = await fetch(`${API_BASE}?query=${encodeURIComponent(movieTitle)}&limit=1`);
+          const data = await response.json();
+          return data.titles?.[0];
+        });
+        
+        const movies = (await Promise.all(promises)).filter(m => m && m.type === 'movie');
+        
+        if (movies.length > 0) {
+          displayMovies(movies, 'trendingGrid');
+        } else {
+          // Fallback to manual cards if API fails
+          displayFallbackTrending();
+        }
+      } catch (error) {
+        console.error('Failed to load trending:', error);
+        displayFallbackTrending();
+      }
+      
+      document.getElementById('loadingState').style.display = 'none';
+    }
+    
+    function displayFallbackTrending() {
+      const container = document.getElementById('trendingGrid');
+      container.innerHTML = '';
+      
+      const fallbackMovies = [
+        { id: 'tt1375666', title: 'Inception', year: '2010', rating: 8.8 },
+        { id: 'tt0468569', title: 'The Dark Knight', year: '2008', rating: 9.0 },
+        { id: 'tt0816692', title: 'Interstellar', year: '2014', rating: 8.6 },
+        { id: 'tt0499549', title: 'Avatar', year: '2009', rating: 7.9 },
+        { id: 'tt0111161', title: 'The Shawshank Redemption', year: '1994', rating: 9.3 },
+        { id: 'tt0133093', title: 'The Matrix', year: '1999', rating: 8.7 },
+        { id: 'tt0109830', title: 'Forrest Gump', year: '1994', rating: 8.8 },
+        { id: 'tt0120737', title: 'The Lord of the Rings', year: '2001', rating: 8.9 }
+      ];
+      
+      fallbackMovies.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.innerHTML = `
+          <div class="movie-poster">
+            <img src="https://ui-avatars.com/api/?background=e50914&color=fff&bold=true&size=300&length=2&name=${encodeURIComponent(movie.title)}" alt="${movie.title}">
+            <div class="movie-rating">⭐ ${movie.rating}</div>
+          </div>
+          <div class="movie-info">
+            <div class="movie-title">${escapeHtml(movie.title)}</div>
+            <div class="movie-year">${movie.year}</div>
+            <button class="watch-btn" onclick="watchMovie('${movie.id}', '${escapeHtml(movie.title)}')">
+              🎬 Watch Now
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+    
+    function showNoResults() {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('moviesGrid').style.display = 'none';
+      document.getElementById('noResults').style.display = 'block';
+      document.getElementById('trendingSection').style.display = 'block';
+      document.getElementById('resultsCount').textContent = '0 movies found';
+      
+      // Reload trending
+      showTrending();
+    }
+    
+    // ─────────────────────────────────────────────
+    // UTILITIES
+    // ─────────────────────────────────────────────
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // Enter key support
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        searchMovies();
+      }
+    });
+    
+    // Load trending on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      showTrending();
+      
+      // Optional: Check for search query in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchQuery = urlParams.get('search');
+      if (searchQuery) {
+        document.getElementById('searchInput').value = searchQuery;
+        searchMovies();
+      }
+    });
+    
+    // Simple analytics - track popular searches (optional)
+    function trackSearch(query) {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+ searches.unshift({ query, timestamp: Date.now() });
+      localStorage.setItem('searchHistory', searches.slice(0, 20));
+    }
+  </script>
+</body>
+</html>
